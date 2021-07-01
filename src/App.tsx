@@ -22,10 +22,14 @@ const App = () => {
 
 	const handleChangeFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
 		setFileError(undefined);
+
 		if (event.target.files) {
 			const newFiles = Array.from(event.target.files);
+
+			// ? check errors
 			const isError = newFiles.some((v) => {
 				const extType = v.name.split('.').pop();
+
 				if (v.type !== 'application/pdf' && extType && extType.toLocaleLowerCase() !== 'pdf') {
 					setFileError('Only PDF is allowed.');
 					return true;
@@ -33,8 +37,13 @@ const App = () => {
 					return false;
 				}
 			});
-			console.log('isError', isError);
-			if (!isError) {
+
+			// ? check for uniqueness
+			const intersectedFiles = newFiles.filter((a) => files.some((b) => a.name === b.name && a.type === b.type));
+
+			if (intersectedFiles.length > 0) {
+				setFileError("Don't select a duplicate file.");
+			} else if (!isError) {
 				if (files.length > 0) {
 					setFiles([...files, ...newFiles]);
 				} else {
@@ -127,9 +136,9 @@ const App = () => {
 			)}
 			<div className='space-y-2'>
 				<div
-					className={`border rounded-md hover:border-dashed hover:border-gray-800 ${
-						isFileHoverOnDrop ? 'border-dashed border-gray-800' : ''
-					} ${fileError ? 'border-red-500' : ''}`}
+					className={`border rounded-md ${isFileHoverOnDrop ? 'border-dashed border-gray-800' : ''} ${
+						fileError ? 'border-red-500' : 'hover:border-dashed hover:border-gray-800'
+					}`}
 					onDragEnter={() => {
 						setFileHoverOnDrop(true);
 					}}
@@ -180,21 +189,23 @@ const App = () => {
 				{fileError && <p className='text-red-500 text-xs italic font-medium'>{fileError}</p>}
 			</div>
 
-			{files.length > 0 &&
-				files.map(({ name, size }, i) => (
-					<div key={i} className='group flex items-center justify-between border bg-gray-100 rounded-lg p-2'>
-						<div className='flex items-center space-x-5'>
-							<img src={pdfImg} alt='pdf' />
-							<div>
-								<h2 className='font-semibold'>{name}</h2>
-								<h2>{(size / 1024 / 1024).toFixed(1)} MB</h2>
+			<div className='border rounded-lg p-2 space-y-2 max-h-96 overflow-auto'>
+				{files.length > 0 &&
+					files.map(({ name, size }, i) => (
+						<div key={i} className='group flex items-center justify-between border bg-gray-100 rounded-lg p-2'>
+							<div className='flex items-center space-x-5'>
+								<img src={pdfImg} alt='pdf' />
+								<div>
+									<h2 className='font-semibold'>{name}</h2>
+									<h2>{(size / 1024 / 1024).toFixed(1)} MB</h2>
+								</div>
 							</div>
+							<button className='hidden group-hover:inline-block bg-gray-200 border border-gray-300 p-2 rounded-full'>
+								<img src={crossImg} alt='cross' />
+							</button>
 						</div>
-						<button className='hidden group-hover:inline-block bg-gray-200 border border-gray-300 p-2 rounded-full'>
-							<img src={crossImg} alt='cross' />
-						</button>
-					</div>
-				))}
+					))}
+			</div>
 		</div>
 	);
 };

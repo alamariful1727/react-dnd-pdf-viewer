@@ -56,6 +56,10 @@ const App = () => {
 	const handleRemoveOneFile = (newFile: File) => {
 		const _files = [...files];
 
+		// ? check is this the selected file
+		if (selectedFile && selectedFile.name === newFile.name && selectedFile.type === newFile.type) {
+			setSelectedFile(undefined);
+		}
 		for (let i = 0; i < _files.length; i++) {
 			const _file = _files[i];
 			if (_file.name === newFile.name && _file.type === newFile.type) {
@@ -67,8 +71,11 @@ const App = () => {
 		setFiles(_files);
 	};
 
+	const handleSelectOneFile = (newFile: File) => setSelectedFile(newFile);
+
 	const onDocumentLoadSuccess = ({ numPages }: any) => {
 		setNumPages(numPages);
+		setPdfSize();
 	};
 
 	const changePage = (offset: number) => {
@@ -91,7 +98,6 @@ const App = () => {
 
 	useEffect(() => {
 		window.addEventListener('resize', throttle(setPdfSize, 250));
-		setPdfSize();
 		return () => {
 			window.removeEventListener('resize', throttle(setPdfSize, 250));
 		};
@@ -108,13 +114,13 @@ const App = () => {
 		<div className='p-6 max-w-lg mx-auto space-y-5'>
 			<h1 className='text-2xl text-center font-semibold'>REACT-PDF</h1>
 			{selectedFile && (
-				<div className='hidden space-y-2'>
+				<div className='space-y-2'>
 					<h2 className='font-semibold'>Selected PDF's preview:</h2>
 					<div className='border'>
 						<div ref={pdfWrapper}>
 							<Document
-								// file='cv.pdf'
-								file='https://typhoon-resource.s3.amazonaws.com/filmmaker_docs/Typhoon-Onboarding-Guide.pdf'
+								file={selectedFile}
+								// file='https://typhoon-resource.s3.amazonaws.com/filmmaker_docs/Typhoon-Onboarding-Guide.pdf'
 								onLoadSuccess={onDocumentLoadSuccess}
 								options={{ workerSrc: 'pdf.worker.js' }}
 								noData=''
@@ -204,8 +210,8 @@ const App = () => {
 			{files.length > 0 && (
 				<div className='border rounded-lg p-2 space-y-3 max-h-80 overflow-auto'>
 					{files.map((_file, i) => (
-						<div key={i} className='group flex items-center justify-between border bg-gray-100 rounded-lg p-2'>
-							<div className='flex items-center space-x-5'>
+						<div key={i} className='group flex items-center justify-between border hover:bg-gray-100 rounded-lg p-2'>
+							<div className='flex-1 flex items-center space-x-5' onClick={() => handleSelectOneFile(_file)}>
 								<img src={pdfImg} alt='pdf' />
 								<div>
 									<h2 className='font-semibold'>{_file.name}</h2>

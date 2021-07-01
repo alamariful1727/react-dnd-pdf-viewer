@@ -170,23 +170,38 @@ const App = () => {
 					onDrop={(e) => {
 						e.preventDefault();
 						setFileHoverOnDrop(false);
-						setSelectedFile(undefined);
-						// if (e.dataTransfer.files) {
-						// 	const files = Array.from(e.dataTransfer.files);
-						// 	if (files.length > 1) {
-						// 		setFileError('Drop only One file.');
-						// 	} else if (files.length === 1 && files[0]) {
-						// 		const extType = files[0].name.split('.').pop();
-						// 		if (files[0].type !== 'application/pdf' && extType && extType.toLocaleLowerCase() !== 'pdf') {
-						// 			setFileError('Only mp4, mov, mt2, mpg, m2t, m2ts, ts and h264 are allowed.');
-						// 			return;
-						// 		} else {
-						// 			setFile(files[0]);
-						// 			setFileError(undefined);
-						// 			return;
-						// 		}
-						// 	}
-						// }
+						setFileError(undefined);
+
+						if (e.dataTransfer.files) {
+							const newFiles = Array.from(e.dataTransfer.files);
+
+							// ? check errors
+							const isError = newFiles.some((v) => {
+								const extType = v.name.split('.').pop();
+
+								if (v.type !== 'application/pdf' && extType && extType.toLocaleLowerCase() !== 'pdf') {
+									setFileError('Only PDF is allowed.');
+									return true;
+								} else {
+									return false;
+								}
+							});
+
+							// ? check for uniqueness
+							const intersectedFiles = newFiles.filter((a) =>
+								files.some((b) => a.name === b.name && a.type === b.type)
+							);
+
+							if (intersectedFiles.length > 0) {
+								setFileError("Don't select a duplicate file.");
+							} else if (!isError) {
+								if (files.length > 0) {
+									setFiles([...files, ...newFiles]);
+								} else {
+									setFiles(newFiles);
+								}
+							}
+						}
 					}}>
 					<input
 						accept='application/pdf'
@@ -198,8 +213,9 @@ const App = () => {
 					/>
 					<label htmlFor='browse-file-button'>
 						<div className='flex justify-start space-x-6 items-center p-6 cursor-pointer'>
-							<p className='text-gray-800 text-sm'>
-								Click here to upload <span className='font-semibold text-base'>FILE</span>
+							<p className='text-gray-800'>
+								<span className='font-semibold'>DRAG</span> or <span className='font-semibold'>CLICK</span> here to
+								upload <span className='font-semibold'>PDF</span>
 							</p>
 						</div>
 					</label>

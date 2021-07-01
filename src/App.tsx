@@ -53,7 +53,19 @@ const App = () => {
 		}
 	};
 
-	const handleRemoveOneFile = (newFile: File) => {};
+	const handleRemoveOneFile = (newFile: File) => {
+		const _files = [...files];
+
+		for (let i = 0; i < _files.length; i++) {
+			const _file = _files[i];
+			if (_file.name === newFile.name && _file.type === newFile.type) {
+				_files.splice(i, 1);
+				break;
+			}
+		}
+
+		setFiles(_files);
+	};
 
 	const onDocumentLoadSuccess = ({ numPages }: any) => {
 		setNumPages(numPages);
@@ -189,23 +201,26 @@ const App = () => {
 				{fileError && <p className='text-red-500 text-xs italic font-medium'>{fileError}</p>}
 			</div>
 
-			<div className='border rounded-lg p-2 space-y-2 max-h-96 overflow-auto'>
-				{files.length > 0 &&
-					files.map(({ name, size }, i) => (
+			{files.length > 0 && (
+				<div className='border rounded-lg p-2 space-y-3 max-h-80 overflow-auto'>
+					{files.map((_file, i) => (
 						<div key={i} className='group flex items-center justify-between border bg-gray-100 rounded-lg p-2'>
 							<div className='flex items-center space-x-5'>
 								<img src={pdfImg} alt='pdf' />
 								<div>
-									<h2 className='font-semibold'>{name}</h2>
-									<h2>{(size / 1024 / 1024).toFixed(1)} MB</h2>
+									<h2 className='font-semibold'>{_file.name}</h2>
+									<h2>{(_file.size / 1024 / 1024).toFixed(1)} MB</h2>
 								</div>
 							</div>
-							<button className='hidden group-hover:inline-block bg-gray-200 border border-gray-300 p-2 rounded-full'>
+							<button
+								onClick={() => handleRemoveOneFile(_file)}
+								className='hidden group-hover:inline-block bg-gray-200 border border-gray-300 p-2 rounded-full'>
 								<img src={crossImg} alt='cross' />
 							</button>
 						</div>
 					))}
-			</div>
+				</div>
+			)}
 		</div>
 	);
 };
